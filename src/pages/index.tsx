@@ -13,7 +13,7 @@ export default function Home() {
       {status === "authenticated" && (
         <>
           <View backgroundColor="accent" color="background">
-            <Container contain="wide" marginY={8}>
+            <Container contain="wide" marginY={[6, 8, 8]} paddingX={[4, 0, 0]}>
               <Heading visualHeadingLevel="Heading 2" semanticElement="h2">
                 Welcome back,
               </Heading>
@@ -24,7 +24,8 @@ export default function Home() {
           </View>
           <Container
             contain="wide"
-            marginY={6}
+            marginY={[2, 4, 6]}
+            paddingX={[4, 0, 0]}
             display={["flex", "flex", "grid"]}
             gap={5}
             alignItems={["flex", "flex", "flex-start"]}

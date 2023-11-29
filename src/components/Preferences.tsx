@@ -128,7 +128,7 @@ export default function Preferences({ ...props }) {
               alignItems="center"
               marginBottom={4}
             >
-              <View width={200} flexDirection="row" alignItems="center">
+              <View width={160} flexDirection="row" alignItems="center">
                 <ToggleSwitch
                   size="md"
                   label={day}

@@ -19,6 +19,7 @@ export default function AboutPage() {
       <Container
         contain="wide"
         marginY={6}
+        paddingX={[4, 0, 0]}
         display={["flex", "flex", "grid"]}
         gap={5}
         alignItems={["flex", "flex", "flex-start"]}

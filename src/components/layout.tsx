@@ -23,7 +23,11 @@ function UserMenu() {
           <Button icon={IconLogout} onClick={signOut}>
             Logout
           </Button>
-          <Avatar fullName={session.user.name} scaleSize={1} />
+          <Avatar
+            display={["none", "flex", "flex"]}
+            fullName={session.user.name}
+            scaleSize={1}
+          />
         </View>
       ) : (
         <ButtonFilled color="accent" href="/api/auth/signin">
@@ -84,7 +88,7 @@ export default function Layout({
         </Container>
       </View>
 
-      <Container contain="wide" paddingX={[4, 4, 0]} {...props}>
+      <Container contain="wide" {...props}>
         {children}
       </Container>
     </>
