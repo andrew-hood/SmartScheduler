@@ -60,6 +60,7 @@ export default function Layout({
           flexDirection="row"
           justifyContent="space-between"
           alignItems="center"
+          paddingX={[4, 4, 0]}
         >
           <View flexDirection="row" alignItems="center" gap={3}>
             <Heading
@@ -81,7 +82,7 @@ export default function Layout({
         </Container>
       </View>
 
-      <Container contain="wide" {...props}>
+      <Container contain="wide" paddingX={[4, 4, 0]} {...props}>
         {children}
       </Container>
     </>
