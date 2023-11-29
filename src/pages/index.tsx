@@ -1,49 +1,39 @@
-import { ButtonFilled, Heading, SpotIcon, Text, View } from "@go1d/go1d";
+import { Container, Heading, Text, View } from "@go1d/go1d";
 import { useSession } from "next-auth/react";
-import Preferences from "~/components/Preferences";
+import Schedule from "~/components/Schedule";
 import Layout from "~/components/layout";
 
 export default function Home() {
   const { data: session, status } = useSession();
 
+  if (status === "loading") return null;
+
   return (
-    <Layout paddingY={6}>
-      {status === "authenticated" ? (
+    <Layout contain="full">
+      {status === "authenticated" && (
         <>
-          <Heading visualHeadingLevel="Heading 2" semanticElement="h2">
-            Welcome,
-          </Heading>
-          <Heading visualHeadingLevel="Heading 1" semanticElement="h1">
-            {session.user?.name}
-          </Heading>
-          <View
-            flexDirection="row"
-            marginTop={6}
-            justifyContent="space-between"
-            alignItems="flex-start"
-          >
-            <Preferences width={["100%", "100%", "75%"]} />
-            <View
-              border={1}
-              borderColor="delicate"
-              backgroundColor="background"
-              borderRadius={3}
-              padding={6}
-              width="23%"
-              display={["none", "none", "flex"]}
-            >
-              <SpotIcon name="FillInBlankQuestion" size={8} />
-              <Heading
-                visualHeadingLevel="Heading 4"
-                semanticElement="h4"
-                marginTop={4}
-              >
-                Need help?
+          <View backgroundColor="accent" color="background">
+            <Container contain="wide" marginY={8}>
+              <Heading visualHeadingLevel="Heading 2" semanticElement="h2">
+                Welcome back,
               </Heading>
-              <Text>Try our new AI powered meeting scheduler!</Text>
-              <ButtonFilled marginTop={4}>Build my planner</ButtonFilled>
-            </View>
+              <Heading visualHeadingLevel="Heading 1" semanticElement="h1">
+                {session.user?.name}
+              </Heading>
+            </Container>
           </View>
+          <Container
+            contain="wide"
+            marginY={6}
+            display={["flex", "flex", "grid"]}
+            gap={5}
+            alignItems={["flex", "flex", "flex-start"]}
+            css={{
+              gridTemplateColumns: "4fr 1fr",
+            }}
+          >
+            <Schedule />
+          </Container>
           {/* <View
             element="pre"
             css={{ overflowWrap: "anywhere", textWrap: "wrap" }}
@@ -51,22 +41,6 @@ export default function Home() {
             {session.accessToken || "no access token"}
           </View> */}
         </>
-      ) : (
-        <View
-          border={3}
-          borderColor="delicate"
-          height={400}
-          width="100%"
-          alignItems="center"
-          justifyContent="center"
-          css={{
-            borderStyle: "dashed",
-          }}
-        >
-          <Text>
-            Unauthenticated content. View the README.md to get started.
-          </Text>
-        </View>
       )}
     </Layout>
   );

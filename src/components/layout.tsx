@@ -34,13 +34,14 @@ function UserMenu() {
   );
 }
 
-const navigation = [{ href: "/about", label: "About" }];
+const navigation = [{ href: "/preferences", label: "Preferences" }];
 
 export default function Layout({
   title = env.NEXT_PUBLIC_GO1_CLIENT_NAME,
   children,
   ...props
 }: React.PropsWithChildren<{ title?: string } & BaseProps>) {
+  const { data: session, status } = useSession();
   return (
     <>
       <Head>
@@ -70,11 +71,12 @@ export default function Layout({
             >
               <Link href="/">{title}</Link>
             </Heading>
-            {navigation.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <Button>{item.label}</Button>
-              </Link>
-            ))}
+            {status === "authenticated" &&
+              navigation.map((item) => (
+                <Link key={item.href} href={item.href}>
+                  <Button>{item.label}</Button>
+                </Link>
+              ))}
           </View>
           <View>
             <UserMenu />
