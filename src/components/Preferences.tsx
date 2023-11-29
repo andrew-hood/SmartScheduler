@@ -62,6 +62,7 @@ export default function Preferences({ ...props }) {
       >
         {methods.map((type) => (
           <View
+            key={type.value}
             borderColor={method === type.value ? "accent" : "delicate"}
             border={2}
             borderRadius={3}
@@ -121,6 +122,7 @@ export default function Preferences({ ...props }) {
           </Heading>
           {Object.keys(days).map((day) => (
             <View
+              key={day}
               flexDirection="row"
               justifyContent="space-between"
               alignItems="center"
