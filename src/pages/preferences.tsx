@@ -43,7 +43,7 @@ export default function AboutPage() {
           >
             Need help?
           </Heading>
-          <Text>Try our new AI powered meeting scheduler!</Text>
+          <Text>Try our new automatic meeting scheduler!</Text>
           <ButtonFilled marginTop={4}>Build my planner</ButtonFilled>
         </View>
       </Container>
