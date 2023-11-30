@@ -15,6 +15,7 @@ import React, { useEffect, useState } from "react";
 import ApiV3Service from "~/services/api";
 import { GreedyScheduler } from "~/utils/GreedyScheduler";
 import { LearningPlan } from "~/utils/LearningPlan";
+import { moveSubsetToBack } from "~/utils/array";
 
 export default function Preferences({ onSave, ...props }: { onSave: any }) {
   const { data: session } = useSession();

@@ -1,4 +1,4 @@
-function moveSubsetToBack(arr: any, start: number, end: number) {
+export function moveSubsetToBack(arr: any, start: number, end: number) {
   // Check if start and end indices are within the array bounds
   if (
     start < 0 ||
