@@ -148,7 +148,7 @@ export default function Preferences({ ...props }) {
         semanticElement="h4"
         marginBottom={3}
       >
-        How would you like to select when you are available?
+        Finding time for your learning
       </Heading>
       <View
         flexDirection={["column", "column", "row"]}
