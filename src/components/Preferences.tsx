@@ -10,13 +10,13 @@ import {
   ToggleSwitch,
   View,
 } from "@go1d/go1d";
-import { add } from "date-fns";
+import { add, milliseconds } from "date-fns";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import ApiV3Service from "~/services/api";
 import { GreedyScheduler } from "~/utils/GreedyScheduler";
 import { LearningPlan } from "~/utils/LearningPlan";
-import { getLocalDate, getMonday } from "~/utils/date";
+import { getMonday } from "~/utils/date";
 
 export default function Preferences({ ...props }) {
   const { data: session } = useSession();
@@ -24,16 +24,17 @@ export default function Preferences({ ...props }) {
   const [preferences, setPreferences] = useState({} as any);
   const methods = [
     {
-      label: "Via Calendar",
+      label: "Suggest my schedule",
       value: "automatic",
       description:
-        "You can automatically block out times based on your availability in your calendar.",
+        "Automatically suggest learning times based on your availability over the next week.",
       recommended: true,
     },
     {
-      label: "Manual",
+      label: "Set my schedule",
       value: "manual",
-      description: "You can manually block out times for each day of the week.",
+      description:
+        "Manually choose your own learning times for each day of the week.",
     },
   ];
 
@@ -78,31 +79,31 @@ export default function Preferences({ ...props }) {
 
     Object.keys(values).forEach((day) => {
       const dayIndex = daysOfWeek.indexOf(day as string);
-      const date = getMonday(new Date(), dayIndex);
+      const date = getMonday(add(new Date(), { days: 1 }), dayIndex);
 
       let startTime, endTime;
       switch (values[day]) {
         case "morning":
-          startTime = date.getTime() / 1000 + 9 * 3600; // 9am
-          endTime = startTime + 1 * 3600; // 10am
+          startTime = add(date, { hours: 9 }).getTime(); // 9am
+          endTime = add(date, { hours: 11 }).getTime(); // 11am
           break;
         case "midday":
-          startTime = date.getTime() / 1000 + 12 * 3600; // 12pm
-          endTime = startTime + 1 * 3600; // 1pm
+          startTime = add(date, { hours: 11 }).getTime(); // 11am
+          endTime = add(date, { hours: 13 }).getTime(); // 1pm
           break;
         case "afternoon":
-          startTime = date.getTime() / 1000 + 15 * 3600; // 3pm
-          endTime = startTime + 1 * 3600; // 4pm
+          startTime = add(date, { hours: 13 }).getTime(); // 1pm
+          endTime = add(date, { hours: 15 }).getTime(); // 3pm
           break;
         default:
-          startTime = date.getTime() / 1000 + 9 * 3600; // 9am
-          endTime = startTime + 1 * 3600; // 10am
+          startTime = add(date, { hours: 15 }).getTime(); // 3pm
+          endTime = add(date, { hours: 17 }).getTime(); // 5pm
           break;
       }
 
       lp.addAvailability(startTime, endTime);
-      console.log(startTime, new Date(startTime * 1000));
-      console.log(endTime, new Date(endTime * 1000));
+      console.log(startTime, new Date(startTime));
+      console.log(endTime, new Date(endTime));
     });
 
     console.log(lp.getAvailabilities());
@@ -115,10 +116,10 @@ export default function Preferences({ ...props }) {
     tasks.forEach((task: any) => {
       lp.addTask(
         JSON.stringify(task),
-        1800,
+        milliseconds({ minutes: 30 }),
         task.due_date
-          ? new Date(task.due_date).getTime() / 1000
-          : add(new Date(), { years: 1 }).getTime() / 1000
+          ? new Date(task.due_date).getTime()
+          : add(new Date(), { years: 1 }).getTime()
       );
     });
 
@@ -185,7 +186,7 @@ export default function Preferences({ ...props }) {
             semanticElement="h4"
             marginBottom={3}
           >
-            Login to your calendar
+            Connect your calendar
           </Heading>
           <ButtonFilled size="lg" width={300}>
             Login to Microsoft

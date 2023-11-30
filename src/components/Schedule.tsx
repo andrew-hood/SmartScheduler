@@ -11,10 +11,8 @@ import {
 import IconCalendar from "@go1d/go1d/build/components/Icons/Calendar";
 import { useSession } from "next-auth/react";
 import React from "react";
-import ApiV3Service from "~/services/api";
 import { formatDate, formatTime } from "~/utils/date";
 import add from "date-fns/add";
-import { saveAs } from "file-saver";
 import ical from "ical-generator";
 import axios from "axios";
 
@@ -29,12 +27,12 @@ const Cards = ({ cards }: { cards: any[] }) => (
             <Card.Title>{parsed?.lo?.title}</Card.Title>
             <Card.Meta>
               <Card.MetaItem>
-                Start Time: {formatTime(new Date(card.startTime * 1000))}
+                Start Time: {formatTime(new Date(card.startTime))}
               </Card.MetaItem>
             </Card.Meta>
             <Card.Meta>
               <Card.MetaItem>
-                End Time: {formatTime(new Date(card.endTime * 1000))}
+                End Time: {formatTime(new Date(card.endTime))}
               </Card.MetaItem>
             </Card.Meta>
           </Card.Content>
@@ -77,7 +75,7 @@ export default function Schedule() {
   console.log(days);
 
   schedule?.schedule?.forEach((task: any) => {
-    const dayValue = new Date(task.startTime * 1000).getDay();
+    const dayValue = new Date(task.startTime).getDay();
     const dayIndex = days.findIndex((day) => day?.index === dayValue);
     console.log(dayIndex);
     (days as any)[dayIndex].tasks.push(task);
@@ -101,7 +99,7 @@ export default function Schedule() {
       default:
         startDate.setHours(9, 0, 0);
     }
-    const endDate = new Date(startDate.getTime() + 2 * 3600000); // +2 hours
+    const endDate = add(startDate, {hours: 2}); // +2 hours
     return { startDate, endDate };
   };
 

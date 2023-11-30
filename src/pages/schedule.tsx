@@ -49,7 +49,7 @@ export default function Home() {
           Schedule
           {sr.schedule.map((scheduledTask, i) => 
             <Text key={'scheduled_task_' + i}>
-            {scheduledTask.name} | {new Date(scheduledTask.startTime * 1000).toString()} | {new Date(scheduledTask.endTime * 1000).toString()}
+            {scheduledTask.name} | {new Date(scheduledTask.startTime).toString()} | {new Date(scheduledTask.endTime).toString()}
             </Text> 
           )}
           Potentially late
