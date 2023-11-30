@@ -144,7 +144,7 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
         semanticElement="h4"
         marginBottom={3}
       >
-        How would you like to select when you are available?
+        Finding time for your learning
       </Heading>
       <View
         display={["flex", "flex", "grid"]}
