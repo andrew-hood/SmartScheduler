@@ -1,26 +1,40 @@
 import {
   ButtonFilled,
   ButtonMinimal,
+  Card,
   Heading,
+  Link,
   Pill,
   Text,
   View,
 } from "@go1d/go1d";
 import IconCalendar from "@go1d/go1d/build/components/Icons/Calendar";
-import React from "react";
+import { useSession } from "next-auth/react";
+import React, { useEffect } from "react";
+import ApiV3Service from "~/services/api";
+import { formatDate, getMonday } from "~/utils/date";
 
-function getMonday(d: any, offset = 0) {
-  d = new Date(d);
-  var day = d.getDay(),
-    diff = d.getDate() - day + offset + (day == 0 ? -6 : 1); // adjust when day is sunday
-  return new Date(d.setDate(diff));
-}
-
-function formatDate(d: Date) {
-  return d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
-}
+const Cards = ({ cards }: { cards: any[] }) => (
+  <View flexDirection="row" gap={3} overflow="scroll" marginTop={3}>
+    {cards.map((card: any) => (
+      <Card key={card.id} href="" appearance="minimal">
+        <Card.Image src={card.core.image} alt="Alt text" />
+        <Card.Content>
+          <Card.Title>{card.core.title}</Card.Title>
+          <Card.Meta>
+            <Card.MetaItem>{card.core.type}</Card.MetaItem>
+          </Card.Meta>
+        </Card.Content>
+      </Card>
+    ))}
+  </View>
+);
 
 export default function Schedule() {
+  const { data: session, status } = useSession();
+  const [showCards, setShowCards] = React.useState(false);
+  const [cards, setCards] = React.useState([]);
+
   const dayOfTheWeek = new Date().getDay();
   const days = {
     Monday: {
@@ -34,6 +48,14 @@ export default function Schedule() {
     Saturday: { block: "none", date: getMonday(new Date(), 5) },
     Sunday: { block: "none", date: getMonday(new Date(), 6) },
   };
+
+  const api = new ApiV3Service(session?.accessToken as string);
+  useEffect(() => {
+    api.getEnrolments().then((data) => {
+      console.log(data);
+      setCards(data.hits);
+    });
+  }, []);
 
   return (
     <View marginY={6}>
@@ -76,8 +98,19 @@ export default function Schedule() {
             <Pill>{(days as any)[day].block}</Pill>
           </View>
           {index === dayOfTheWeek - 1 ? (
-            <View flexDirection="row" gap={3}>
-              <ButtonFilled color="accent">Start</ButtonFilled>
+            <View flexDirection="row">
+              {showCards ? (
+                <View marginTop={4}>
+                  <Text color="subtle">
+                    Pick up from one of your existing learning
+                  </Text>
+                  <Cards cards={cards} />
+                </View>
+              ) : (
+                <ButtonFilled color="accent" onClick={() => setShowCards(true)}>
+                  Continue
+                </ButtonFilled>
+              )}
             </View>
           ) : (
             (days as any)[day].block !== "none" && (
