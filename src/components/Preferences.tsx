@@ -10,9 +10,15 @@ import {
   ToggleSwitch,
   View,
 } from "@go1d/go1d";
+import { useSession } from "next-auth/react";
 import React, { useState } from "react";
+import ApiV3Service from "~/services/api";
+import { GreedyScheduler } from "~/utils/GreedyScheduler";
+import { LearningPlan } from "~/utils/LearningPlan";
+import { getMonday } from "~/utils/date";
 
 export default function Preferences({ ...props }) {
+  const { data: session } = useSession();
   const [method, setMethod] = useState("automatic");
   const methods = [
     {
@@ -38,6 +44,73 @@ export default function Preferences({ ...props }) {
     Saturday: false,
     Sunday: false,
   });
+
+  const daysOfWeek = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
+  const handleSubmitForm = async (values: any, actions: any) => {
+    console.log(values, actions);
+
+    const lp = new LearningPlan();
+
+    Object.keys(values).forEach((key) => {
+      const [, day] = key.split("_");
+      const dayIndex = daysOfWeek.indexOf(day as string);
+      const date = getMonday(new Date(), dayIndex);
+
+      let startTime, endTime;
+      switch (values[key]) {
+        case "morning":
+          startTime = date.getTime() / 1000 + 9 * 3600; // 9am
+          endTime = startTime + 10 * 3600; // 10am
+          break;
+        case "midday":
+          startTime = date.getTime() / 1000 + 11 * 3600; // 11am
+          endTime = startTime + 2 * 3600; // 1pm
+          break;
+        case "afternoon":
+          startTime = date.getTime() / 1000 + 13 * 3600; // 1pm
+          endTime = startTime + 2 * 3600; // 3pm
+          break;
+        default:
+          startTime = date.getTime() / 1000 + 15 * 3600; // 3pm
+          endTime = startTime + 2 * 3600; // 5pm
+          break;
+      }
+
+      lp.addAvailability(startTime, endTime);
+    });
+
+    // get assigned learning
+
+    const api = new ApiV3Service(session?.accessToken as string);
+    const tasks = await api.getAssignedLearning(session?.user.id as string);
+
+    console.log(tasks);
+    tasks.forEach((task: any) => {
+      lp.addTask(
+        task.lo?.title || task.lo_id,
+        1800,
+        new Date(task.due_date * 1000).getTime() / 1000
+      );
+    });
+
+    const gs = new GreedyScheduler();
+    const sr = gs.schedule(lp);
+
+    console.log();
+    localStorage.setItem("preference", JSON.stringify(values));
+    localStorage.setItem("schedule", JSON.stringify(sr));
+
+    actions.setSubmitting(false);
+  };
 
   return (
     <View
@@ -108,10 +181,7 @@ export default function Preferences({ ...props }) {
             block_Thursday: "morning",
             block_Friday: "morning",
           }}
-          onSubmit={(values: any, actions: any) => {
-            console.log(values, actions);
-            actions.setSubmitting(false);
-          }}
+          onSubmit={handleSubmitForm}
         >
           <Heading
             visualHeadingLevel="Heading 4"

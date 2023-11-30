@@ -8,3 +8,7 @@ export function getMonday(d: any, offset = 0) {
 export function formatDate(d: Date) {
   return d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
 }
+
+export function formatTime(d: Date) {
+  return d.getHours() + ":" + d.getMinutes().toString().padStart(2, "0");
+}
