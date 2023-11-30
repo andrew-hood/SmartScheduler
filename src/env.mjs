@@ -23,7 +23,14 @@ export const env = createEnv({
     GO1_CLIENT_ID: z.string(),
     GO1_CLIENT_SECRET: z.string(),
     GO1_CLIENT_SCOPES: z.string(),
+
     SENDGRID_API_KEY: z.string(),
+
+    AZURE_APP_ID: z.string(),
+    AZURE_APP_SECRET: z.string(),
+    AZURE_APP_REDIRECT_URI: z.string(),
+    AZURE_AUTHORITY_URL: z.string(),
+    AZURE_APP_TENANT_ID: z.string(),
   },
 
   /**
@@ -48,7 +55,14 @@ export const env = createEnv({
     GO1_CLIENT_ID: process.env.GO1_CLIENT_ID,
     GO1_CLIENT_SECRET: process.env.GO1_CLIENT_SECRET,
     GO1_CLIENT_SCOPES: process.env.GO1_CLIENT_SCOPES,
+
     SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
+
+    AZURE_APP_ID: process.env.AZURE_APP_ID,
+    AZURE_APP_SECRET: process.env.AZURE_APP_SECRET,
+    AZURE_APP_REDIRECT_URI: process.env.AZURE_APP_REDIRECT_URI,
+    AZURE_AUTHORITY_URL: process.env.AZURE_AUTHORITY_URL,
+    AZURE_APP_TENANT_ID: process.env.AZURE_APP_TENANT_ID,
 
     NEXT_PUBLIC_GO1_CLIENT_NAME: process.env.NEXT_PUBLIC_GO1_CLIENT_NAME,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
