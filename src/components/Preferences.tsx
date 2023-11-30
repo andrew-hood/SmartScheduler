@@ -16,7 +16,7 @@ import React, { useEffect, useState } from "react";
 import ApiV3Service from "~/services/api";
 import { GreedyScheduler } from "~/utils/GreedyScheduler";
 import { LearningPlan } from "~/utils/LearningPlan";
-import { getLocalDate, getMonday } from "~/utils/date";
+import { getMonday } from "~/utils/date";
 
 export default function Preferences({ ...props }) {
   const { data: session } = useSession();
@@ -83,26 +83,26 @@ export default function Preferences({ ...props }) {
       let startTime, endTime;
       switch (values[day]) {
         case "morning":
-          startTime = date.getTime() / 1000 + 9 * 3600; // 9am
-          endTime = startTime + 2 * 3600; // 11am
+          startTime = add(date, {hours: 9}).getTime(); // 9am
+          endTime = add(date, {hours: 11}).getTime(); // 11am
           break;
         case "midday":
-          startTime = date.getTime() / 1000 + 11 * 3600; // 11am
-          endTime = startTime + 2 * 3600; // 1pm
+          startTime = add(date, {hours: 11}).getTime(); // 11am
+          endTime = add(date, {hours: 13}).getTime(); // 1pm
           break;
         case "afternoon":
-          startTime = date.getTime() / 1000 + 13 * 3600; // 1pm
-          endTime = startTime + 2 * 3600; // 3pm
+          startTime = add(date, {hours: 13}).getTime(); // 1pm
+          endTime = add(date, {hours: 15}).getTime(); // 3pm
           break;
         default:
-          startTime = date.getTime() / 1000 + 15 * 3600; // 3pm
-          endTime = startTime + 2 * 3600; // 5pm
+          startTime = add(date, {hours: 15}).getTime(); // 3pm
+          endTime = add(date, {hours: 17}).getTime(); // 5pm
           break;
       }
 
       lp.addAvailability(startTime, endTime);
-      console.log(startTime, new Date(startTime * 1000));
-      console.log(endTime, new Date(endTime * 1000));
+      console.log(startTime, new Date(startTime));
+      console.log(endTime, new Date(endTime));
     });
 
     console.log(lp.getAvailabilities());
@@ -117,8 +117,8 @@ export default function Preferences({ ...props }) {
         JSON.stringify(task),
         1800,
         task.due_date
-          ? new Date(task.due_date).getTime() / 1000
-          : add(new Date(), { years: 1 }).getTime() / 1000
+          ? new Date(task.due_date).getTime()
+          : add(new Date(), { years: 1 }).getTime()
       );
     });
 

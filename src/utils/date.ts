@@ -14,8 +14,3 @@ export function formatDate(d: Date) {
 export function formatTime(d: Date) {
   return d.getHours() + ":" + d.getMinutes().toString().padStart(2, "0");
 }
-
-export function getLocalDate(timestamp: number) {
-  const offset = new Date().getTimezoneOffset();
-  return new Date(timestamp * 1000 + offset * 60 * 1000);
-}

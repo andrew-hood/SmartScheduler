@@ -29,12 +29,12 @@ const Cards = ({ cards }: { cards: any[] }) => (
             <Card.Title>{parsed?.lo?.title}</Card.Title>
             <Card.Meta>
               <Card.MetaItem>
-                Start Time: {formatTime(new Date(card.startTime * 1000))}
+                Start Time: {formatTime(new Date(card.startTime))}
               </Card.MetaItem>
             </Card.Meta>
             <Card.Meta>
               <Card.MetaItem>
-                End Time: {formatTime(new Date(card.endTime * 1000))}
+                End Time: {formatTime(new Date(card.endTime))}
               </Card.MetaItem>
             </Card.Meta>
           </Card.Content>
@@ -77,7 +77,7 @@ export default function Schedule() {
   console.log(days);
 
   schedule?.schedule?.forEach((task: any) => {
-    const dayValue = new Date(task.startTime * 1000).getDay();
+    const dayValue = new Date(task.startTime).getDay();
     const dayIndex = days.findIndex((day) => day?.index === dayValue);
     console.log(dayIndex);
     (days as any)[dayIndex].tasks.push(task);
