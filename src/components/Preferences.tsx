@@ -10,7 +10,7 @@ import {
   ToggleSwitch,
   View,
 } from "@go1d/go1d";
-import { add } from "date-fns";
+import { add, milliseconds } from "date-fns";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import ApiV3Service from "~/services/api";
@@ -115,7 +115,7 @@ export default function Preferences({ ...props }) {
     tasks.forEach((task: any) => {
       lp.addTask(
         JSON.stringify(task),
-        1800 * 1000,
+        milliseconds({minutes: 30}),
         task.due_date
           ? new Date(task.due_date).getTime()
           : add(new Date(), { years: 1 }).getTime()
