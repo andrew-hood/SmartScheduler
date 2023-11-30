@@ -23,6 +23,7 @@ export const env = createEnv({
     GO1_CLIENT_ID: z.string(),
     GO1_CLIENT_SECRET: z.string(),
     GO1_CLIENT_SCOPES: z.string(),
+    SENDGRID_API_KEY: z.string(),
   },
 
   /**
@@ -47,6 +48,7 @@ export const env = createEnv({
     GO1_CLIENT_ID: process.env.GO1_CLIENT_ID,
     GO1_CLIENT_SECRET: process.env.GO1_CLIENT_SECRET,
     GO1_CLIENT_SCOPES: process.env.GO1_CLIENT_SCOPES,
+    SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
 
     NEXT_PUBLIC_GO1_CLIENT_NAME: process.env.NEXT_PUBLIC_GO1_CLIENT_NAME,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
