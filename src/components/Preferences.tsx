@@ -84,19 +84,19 @@ export default function Preferences({ ...props }) {
       switch (values[day]) {
         case "morning":
           startTime = date.getTime() / 1000 + 9 * 3600; // 9am
-          endTime = startTime + 2 * 3600; // 11am
+          endTime = startTime + 1 * 3600; // 10am
           break;
         case "midday":
-          startTime = date.getTime() / 1000 + 11 * 3600; // 11am
-          endTime = startTime + 2 * 3600; // 1pm
+          startTime = date.getTime() / 1000 + 12 * 3600; // 12pm
+          endTime = startTime + 1 * 3600; // 1pm
           break;
         case "afternoon":
-          startTime = date.getTime() / 1000 + 13 * 3600; // 1pm
-          endTime = startTime + 2 * 3600; // 3pm
+          startTime = date.getTime() / 1000 + 15 * 3600; // 3pm
+          endTime = startTime + 1 * 3600; // 4pm
           break;
         default:
-          startTime = date.getTime() / 1000 + 15 * 3600; // 3pm
-          endTime = startTime + 2 * 3600; // 5pm
+          startTime = date.getTime() / 1000 + 9 * 3600; // 9am
+          endTime = startTime + 1 * 3600; // 10am
           break;
       }
 
@@ -240,8 +240,12 @@ export default function Preferences({ ...props }) {
                 name={`${day}`}
                 component={Select}
                 width={150}
-                defaultValue="morning"
+                defaultValue="none"
                 options={[
+                  {
+                    label: "None",
+                    value: "none",
+                  },
                   {
                     label: "Morning",
                     value: "morning",
