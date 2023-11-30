@@ -3,38 +3,36 @@ import {
   Field,
   Form,
   Heading,
-  Pill,
   Select,
   SubmitButton,
   Text,
   ToggleSwitch,
   View,
 } from "@go1d/go1d";
-import { add, milliseconds } from "date-fns";
+import { add, milliseconds, startOfDay } from "date-fns";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import ApiV3Service from "~/services/api";
 import { GreedyScheduler } from "~/utils/GreedyScheduler";
 import { LearningPlan } from "~/utils/LearningPlan";
-import { getMonday } from "~/utils/date";
 
-export default function Preferences({ ...props }) {
+export default function Preferences({ onSave, ...props }: { onSave: any }) {
   const { data: session } = useSession();
-  const [method, setMethod] = useState("automatic");
-  const [preferences, setPreferences] = useState({} as any);
+  const [method, setMethod] = useState("manual");
+  const [preferences, setPreferences] = useState(null);
   const methods = [
+    {
+      label: "Set my schedule",
+      value: "manual",
+      description:
+        "Manually choose your own learning times for each day of the week.",
+    },
     {
       label: "Suggest my schedule",
       value: "automatic",
       description:
         "Automatically suggest learning times based on your availability over the next week.",
       recommended: true,
-    },
-    {
-      label: "Set my schedule",
-      value: "manual",
-      description:
-        "Manually choose your own learning times for each day of the week.",
     },
   ];
 
@@ -68,7 +66,6 @@ export default function Preferences({ ...props }) {
   ];
 
   const handleSubmitForm = async (values: any, actions: any) => {
-    console.log(values, actions);
     Object.keys(values).forEach((day) => {
       if (!(days as any)[day as string]) {
         delete values[day];
@@ -77,9 +74,12 @@ export default function Preferences({ ...props }) {
 
     const lp = new LearningPlan();
 
+    const dayOfTheWeek = new Date().getDay();
+    const orderedDays = moveSubsetToBack(daysOfWeek, 0, dayOfTheWeek);
+
     Object.keys(values).forEach((day) => {
-      const dayIndex = daysOfWeek.indexOf(day as string);
-      const date = getMonday(add(new Date(), { days: 1 }), dayIndex);
+      const dayIndex = orderedDays.indexOf(day as string);
+      const date = startOfDay(add(new Date(), { days: dayIndex }));
 
       let startTime, endTime;
       switch (values[day]) {
@@ -102,17 +102,12 @@ export default function Preferences({ ...props }) {
       }
 
       lp.addAvailability(startTime, endTime);
-      console.log(startTime, new Date(startTime));
-      console.log(endTime, new Date(endTime));
     });
-
-    console.log(lp.getAvailabilities());
 
     // get assigned learning
 
     const api = new ApiV3Service(session?.accessToken as string);
     const tasks = await api.getAssignedLearning(session?.user.id as string);
-    console.log(tasks);
     tasks.forEach((task: any) => {
       lp.addTask(
         JSON.stringify(task),
@@ -126,10 +121,10 @@ export default function Preferences({ ...props }) {
     const gs = new GreedyScheduler();
     const sr = gs.schedule(lp);
 
-    console.log(sr);
-
     localStorage.setItem("preference", JSON.stringify(values));
     localStorage.setItem("schedule", JSON.stringify(sr));
+
+    onSave && onSave([values, sr]);
 
     actions.setSubmitting(false);
   };
@@ -139,7 +134,8 @@ export default function Preferences({ ...props }) {
       backgroundColor="background"
       border={1}
       borderColor="delicate"
-      padding={[4, 6, 6]}
+      padding={[4, 5, 5]}
+      marginBottom={4}
       borderRadius={3}
       {...props}
     >
@@ -151,9 +147,12 @@ export default function Preferences({ ...props }) {
         How would you like to select when you are available?
       </Heading>
       <View
-        flexDirection={["column", "column", "row"]}
-        gap={[3, 4, 5]}
-        marginBottom={8}
+        display={["flex", "flex", "grid"]}
+        gap={4}
+        css={{
+          gridTemplateColumns: "1fr 1fr",
+        }}
+        marginBottom={6}
       >
         {methods.map((type) => (
           <View
@@ -162,7 +161,6 @@ export default function Preferences({ ...props }) {
             border={2}
             borderRadius={3}
             padding={4}
-            flexBasis={0.49}
             onClick={() => setMethod(type.value)}
             css={{ cursor: "pointer" }}
           >
@@ -172,9 +170,8 @@ export default function Preferences({ ...props }) {
               marginBottom={3}
             >
               {type.label}
-              {type.recommended && <Pill marginLeft={3}>Recommended</Pill>}
             </Heading>
-            <Text>{type.description}</Text>
+            <Text fontSize={1}>{type.description}</Text>
           </View>
         ))}
       </View>
@@ -194,21 +191,8 @@ export default function Preferences({ ...props }) {
         </View>
       )}
 
-      {method === "manual" && (
-        <Form
-          initialValues={
-            preferences || {
-              Monday: "morning",
-              Tuesday: "morning",
-              Wednesday: "morning",
-              Thursday: "morning",
-              Friday: "morning",
-              Saturday: "morning",
-              Sunday: "morning",
-            }
-          }
-          onSubmit={handleSubmitForm}
-        >
+      {method === "manual" && preferences && (
+        <Form initialValues={preferences} onSubmit={handleSubmitForm}>
           <Heading
             visualHeadingLevel="Heading 4"
             semanticElement="h4"

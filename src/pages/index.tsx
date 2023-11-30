@@ -1,5 +1,14 @@
-import { Container, Heading, Text, View } from "@go1d/go1d";
+import {
+  Accordion,
+  ButtonFilled,
+  Container,
+  Heading,
+  SpotIcon,
+  Text,
+  View,
+} from "@go1d/go1d";
 import { useSession } from "next-auth/react";
+import Preferences from "~/components/Preferences";
 import Schedule from "~/components/Schedule";
 import Layout from "~/components/layout";
 
@@ -7,6 +16,10 @@ export default function Home() {
   const { data: session, status } = useSession();
 
   if (status === "loading") return null;
+
+  const updateSchedule = () => {
+    window.location.reload();
+  };
 
   return (
     <Layout contain="full">
@@ -30,17 +43,32 @@ export default function Home() {
             gap={5}
             alignItems={["flex", "flex", "flex-start"]}
             css={{
-              gridTemplateColumns: "4fr 1fr",
+              gridTemplateColumns: "3fr 2fr",
             }}
           >
             <Schedule />
+            <View>
+              <Preferences onSave={updateSchedule} />
+              <View
+                border={1}
+                borderColor="delicate"
+                backgroundColor="background"
+                borderRadius={3}
+                padding={5}
+              >
+                <SpotIcon name="FillInBlankQuestion" size={8} />
+                <Heading
+                  visualHeadingLevel="Heading 4"
+                  semanticElement="h4"
+                  marginTop={4}
+                >
+                  Need help?
+                </Heading>
+                <Text>Try our new automatic meeting scheduler!</Text>
+                <ButtonFilled marginTop={4}>Build my planner</ButtonFilled>
+              </View>
+            </View>
           </Container>
-          {/* <View
-            element="pre"
-            css={{ overflowWrap: "anywhere", textWrap: "wrap" }}
-          >
-            {session.accessToken || "no access token"}
-          </View> */}
         </>
       )}
     </Layout>

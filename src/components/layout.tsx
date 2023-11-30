@@ -38,7 +38,7 @@ function UserMenu() {
   );
 }
 
-const navigation = [{ href: "/preferences", label: "Preferences" }];
+const navigation: any[] = [];
 
 export default function Layout({
   title = env.NEXT_PUBLIC_GO1_CLIENT_NAME,

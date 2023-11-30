@@ -99,7 +99,7 @@ export default function Schedule() {
       default:
         startDate.setHours(9, 0, 0);
     }
-    const endDate = add(startDate, {hours: 2}); // +2 hours
+    const endDate = add(startDate, { hours: 2 }); // +2 hours
     return { startDate, endDate };
   };
 
@@ -160,15 +160,10 @@ export default function Schedule() {
     saveAs(blob, fileName);*/
   };
 
+  if (Object.keys(preferences).length === 0) return null;
+
   return (
-    <View marginY={6}>
-      <Heading
-        visualHeadingLevel="Heading 4"
-        semanticElement="h4"
-        marginBottom={3}
-      >
-        This week's schedule
-      </Heading>
+    <View>
       {days.map((day, index) => (
         <View
           key={day.label}

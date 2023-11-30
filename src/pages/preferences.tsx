@@ -1,13 +1,9 @@
 import {
   ButtonFilled,
   Container,
-  Field,
-  Form,
   Heading,
   SpotIcon,
   Text,
-  TextArea,
-  TextInput,
   View,
 } from "@go1d/go1d";
 import Preferences from "~/components/Preferences";
@@ -27,7 +23,7 @@ export default function AboutPage() {
           gridTemplateColumns: "4fr 1fr",
         }}
       >
-        <Preferences />
+        <Preferences onSave={() => {}} />
         <View
           border={1}
           borderColor="delicate"
