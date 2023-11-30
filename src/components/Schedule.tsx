@@ -1,9 +1,7 @@
 import {
-  ButtonFilled,
   ButtonMinimal,
   Card,
   Heading,
-  Link,
   NotificationContainer,
   NotificationManager,
   Pill,
@@ -12,9 +10,9 @@ import {
 } from "@go1d/go1d";
 import IconCalendar from "@go1d/go1d/build/components/Icons/Calendar";
 import { useSession } from "next-auth/react";
-import React, { useEffect } from "react";
+import React from "react";
 import ApiV3Service from "~/services/api";
-import { formatDate, formatTime, getMonday } from "~/utils/date";
+import { formatDate, formatTime } from "~/utils/date";
 import add from "date-fns/add";
 import { saveAs } from "file-saver";
 import ical from "ical-generator";
@@ -57,8 +55,6 @@ const Cards = ({ cards }: { cards: any[] }) => (
 
 export default function Schedule() {
   const { data: session, status } = useSession();
-  const [showCards, setShowCards] = React.useState(false);
-  const [cards, setCards] = React.useState([]);
 
   const schedule = JSON.parse(localStorage.getItem("schedule") || "{}");
   const preferences = JSON.parse(localStorage.getItem("preference") || "{}");
@@ -81,15 +77,15 @@ export default function Schedule() {
     tasks: [],
   }));
 
-  Object.keys(preferences).forEach((value) => {
-    const [, day] = value.split("_");
-    (days as any)[daysOfWeek.indexOf(day as string)].block = preferences[value];
+  Object.keys(preferences).forEach((key: string) => {
+    const dayIndex = days.findIndex((day) => day?.label === key);
+    (days as any)[dayIndex].block = preferences[key];
   });
 
-  schedule.schedule.forEach((task: any) => {
-    console.log(new Date(task.startTime * 1000));
+  console.log(days);
+
+  schedule?.schedule?.forEach((task: any) => {
     const dayIndex = new Date(task.startTime * 1000).getDay();
-    console.log(dayIndex);
     (days as any)[dayIndex].tasks.push(task);
   });
 
@@ -172,15 +168,6 @@ export default function Schedule() {
     saveAs(blob, fileName);*/
   };
 
-  // const api = new ApiV3Service(session?.accessToken as string);
-  // useEffect(() => {
-  //   api.getEnrolments().then((data) => {
-  //     setCards(data.hits);
-  //   });
-  // }, []);
-
-  console.log(days);
-
   return (
     <View marginY={6}>
       <Heading
@@ -194,12 +181,12 @@ export default function Schedule() {
         <View
           key={day.label}
           backgroundColor="background"
-          border={index === dayOfTheWeek - 1 ? 3 : 1}
-          borderColor={index === dayOfTheWeek - 1 ? "accent" : "delicate"}
+          border={index === 0 ? 3 : 1}
+          borderColor={index === 0 ? "accent" : "delicate"}
           padding={[4, 6, 6]}
           borderRadius={3}
           marginBottom={3}
-          opacity={day.block === "none" ? "disabled" : undefined}
+          opacity={!day.block ? "disabled" : undefined}
         >
           <View
             flexDirection="row"
@@ -218,10 +205,11 @@ export default function Schedule() {
                 {day.label}
               </Heading>
             </View>
-            <View flexDirection="row" alignItems="center">
+            <View flexDirection="row" alignItems="center" gap={3}>
               {day.block && (
                 <View flexDirection="row-reverse">
                   <ButtonMinimal
+                    size="sm"
                     icon={IconCalendar}
                     onClick={() =>
                       handleCalendarEventClick(
@@ -239,10 +227,16 @@ export default function Schedule() {
           </View>
           <View flexDirection="row">
             <View marginTop={4}>
-              <Text color="subtle">
-                Pick up from one of your existing learning
-              </Text>
-              <Cards cards={day.tasks || []} />
+              {day.tasks?.length > 0 ? (
+                <Cards cards={day.tasks || []} />
+              ) : (
+                day.block && (
+                  <Text color="subtle">
+                    There are no assigned learning scheduled for this day. Find
+                    something new on the Go1 platform.
+                  </Text>
+                )
+              )}
             </View>
           </View>
         </View>

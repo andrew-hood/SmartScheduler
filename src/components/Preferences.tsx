@@ -11,7 +11,7 @@ import {
   View,
 } from "@go1d/go1d";
 import { useSession } from "next-auth/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ApiV3Service from "~/services/api";
 import { GreedyScheduler } from "~/utils/GreedyScheduler";
 import { LearningPlan } from "~/utils/LearningPlan";
@@ -20,6 +20,7 @@ import { getMonday } from "~/utils/date";
 export default function Preferences({ ...props }) {
   const { data: session } = useSession();
   const [method, setMethod] = useState("automatic");
+  const [preferences, setPreferences] = useState({} as any);
   const methods = [
     {
       label: "Via Calendar",
@@ -45,6 +46,15 @@ export default function Preferences({ ...props }) {
     Sunday: false,
   });
 
+  useEffect(() => {
+    const preferences = JSON.parse(localStorage.getItem("preference") || "{}");
+    Object.keys(days).forEach((day) => {
+      (days as any)[day] = day in preferences;
+    });
+    setDays({ ...days });
+    setPreferences(preferences);
+  }, []);
+
   const daysOfWeek = [
     "Monday",
     "Tuesday",
@@ -57,16 +67,22 @@ export default function Preferences({ ...props }) {
 
   const handleSubmitForm = async (values: any, actions: any) => {
     console.log(values, actions);
+    Object.keys(values).forEach((day) => {
+      if (!(days as any)[day as string]) {
+        delete values[day];
+      }
+    });
+
+    console.log(values);
 
     const lp = new LearningPlan();
 
-    Object.keys(values).forEach((key) => {
-      const [, day] = key.split("_");
+    Object.keys(values).forEach((day) => {
       const dayIndex = daysOfWeek.indexOf(day as string);
       const date = getMonday(new Date(), dayIndex);
 
       let startTime, endTime;
-      switch (values[key]) {
+      switch (values[day]) {
         case "morning":
           startTime = date.getTime() / 1000 + 9 * 3600; // 9am
           endTime = startTime + 10 * 3600; // 10am
@@ -92,8 +108,6 @@ export default function Preferences({ ...props }) {
 
     const api = new ApiV3Service(session?.accessToken as string);
     const tasks = await api.getAssignedLearning(session?.user.id as string);
-
-    console.log(tasks);
     tasks.forEach((task: any) => {
       lp.addTask(
         task.lo?.title || task.lo_id,
@@ -105,7 +119,6 @@ export default function Preferences({ ...props }) {
     const gs = new GreedyScheduler();
     const sr = gs.schedule(lp);
 
-    console.log();
     localStorage.setItem("preference", JSON.stringify(values));
     localStorage.setItem("schedule", JSON.stringify(sr));
 
@@ -174,13 +187,17 @@ export default function Preferences({ ...props }) {
 
       {method === "manual" && (
         <Form
-          initialValues={{
-            block_Monday: "morning",
-            block_Tuesday: "morning",
-            block_Wednesday: "morning",
-            block_Thursday: "morning",
-            block_Friday: "morning",
-          }}
+          initialValues={
+            preferences || {
+              Monday: "morning",
+              Tuesday: "morning",
+              Wednesday: "morning",
+              Thursday: "morning",
+              Friday: "morning",
+              Saturday: "morning",
+              Sunday: "morning",
+            }
+          }
           onSubmit={handleSubmitForm}
         >
           <Heading
@@ -211,8 +228,8 @@ export default function Preferences({ ...props }) {
               </View>
 
               <Field
-                id={`block_${day}`}
-                name={`block_${day}`}
+                id={`${day}`}
+                name={`${day}`}
                 component={Select}
                 width={150}
                 defaultValue="morning"
