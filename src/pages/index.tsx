@@ -8,14 +8,17 @@ import {
   View,
 } from "@go1d/go1d";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import Preferences from "~/components/Preferences";
 import Schedule from "~/components/Schedule";
 import Layout from "~/components/layout";
 
 export default function Home() {
+  const { push } = useRouter();
   const { data: session, status } = useSession();
 
   if (status === "loading") return null;
+  if (status === "unauthenticated") push("/login");
 
   const updateSchedule = () => {
     window.location.reload();

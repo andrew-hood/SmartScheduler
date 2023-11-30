@@ -145,7 +145,7 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
     calendarEvents: { start: string; end: string }[]
   ): TimeBlockOption[] => {
     const dayDate = getNextDayOfWeek(new Date(), day);
-    
+
     return Object.entries(timeBlocks).reduce<TimeBlockOption[]>(
       (availableBlocks, [block, [startHour, endHour]]) => {
         if (
@@ -172,20 +172,21 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
 
     switch (timeBlock) {
       case "morning":
-        startTime = new Date(dayDate.setHours(9, 0, 0));
-        endTime = new Date(dayDate.setHours(11, 0, 0));
+        startTime = new Date(dayDate.setHours(9, 0, 0)); // 9am
+        endTime = new Date(dayDate.setHours(10, 0, 0)); // 10am
         break;
       case "midday":
-        startTime = new Date(dayDate.setHours(11, 0, 0));
-        endTime = new Date(dayDate.setHours(13, 0, 0));
+        startTime = new Date(dayDate.setHours(12, 0, 0)); // 12pm
+        endTime = new Date(dayDate.setHours(13, 0, 0)); // 1pm
         break;
       case "afternoon":
-        startTime = new Date(dayDate.setHours(13, 0, 0));
-        endTime = new Date(dayDate.setHours(15, 0, 0));
+        startTime = new Date(dayDate.setHours(15, 0, 0)); // 3pm
+        endTime = new Date(dayDate.setHours(16, 0, 0)); // 4pm
         break;
       default:
-        startTime = new Date(dayDate.setHours(15, 0, 0));
-        endTime = new Date(dayDate.setHours(17, 0, 0));
+        startTime = new Date(dayDate.setHours(18, 0, 0)); // 6pm
+        endTime = new Date(dayDate.setHours(19, 0, 0)); // 7pm
+        break;
     }
 
     return calendarEvents.some((event: any) => {
@@ -264,20 +265,20 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
       let startTime, endTime;
       switch (values[day]) {
         case "morning":
-          startTime = add(date, { hours: 9 }).getTime(); // 9am
-          endTime = add(date, { hours: 11 }).getTime(); // 11am
+          startTime = new Date(date.setHours(9, 0, 0)).getTime(); // 9am
+          endTime = new Date(date.setHours(10, 0, 0)).getTime(); // 10am
           break;
         case "midday":
-          startTime = add(date, { hours: 11 }).getTime(); // 11am
-          endTime = add(date, { hours: 13 }).getTime(); // 1pm
+          startTime = new Date(date.setHours(12, 0, 0)).getTime(); // 12pm
+          endTime = new Date(date.setHours(13, 0, 0)).getTime(); // 1pm
           break;
         case "afternoon":
-          startTime = add(date, { hours: 13 }).getTime(); // 1pm
-          endTime = add(date, { hours: 15 }).getTime(); // 3pm
+          startTime = new Date(date.setHours(15, 0, 0)).getTime(); // 3pm
+          endTime = new Date(date.setHours(16, 0, 0)).getTime(); // 4pm
           break;
         default:
-          startTime = add(date, { hours: 15 }).getTime(); // 3pm
-          endTime = add(date, { hours: 17 }).getTime(); // 5pm
+          startTime = new Date(date.setHours(18, 0, 0)).getTime(); // 6pm
+          endTime = new Date(date.setHours(19, 0, 0)).getTime(); // 7pm
           break;
       }
 

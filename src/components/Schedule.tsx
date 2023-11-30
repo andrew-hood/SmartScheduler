@@ -88,10 +88,10 @@ export default function Schedule() {
         startDate.setHours(9, 0, 0);
         break;
       case "midday":
-        startDate.setHours(11, 0, 0);
+        startDate.setHours(12, 0, 0);
         break;
       case "afternoon":
-        startDate.setHours(13, 0, 0);
+        startDate.setHours(15, 0, 0);
         break;
       case "night":
         startDate.setHours(18, 0, 0);
@@ -99,7 +99,7 @@ export default function Schedule() {
       default:
         startDate.setHours(9, 0, 0);
     }
-    const endDate = add(startDate, { hours: 2 }); // +2 hours
+    const endDate = add(startDate, { hours: 1 }); // +2 hours
     return { startDate, endDate };
   };
 
