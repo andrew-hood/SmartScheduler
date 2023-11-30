@@ -11,10 +11,8 @@ import {
 import IconCalendar from "@go1d/go1d/build/components/Icons/Calendar";
 import { useSession } from "next-auth/react";
 import React from "react";
-import ApiV3Service from "~/services/api";
 import { formatDate, formatTime } from "~/utils/date";
 import add from "date-fns/add";
-import { saveAs } from "file-saver";
 import ical from "ical-generator";
 import axios from "axios";
 
@@ -101,7 +99,7 @@ export default function Schedule() {
       default:
         startDate.setHours(9, 0, 0);
     }
-    const endDate = new Date(startDate.getTime() + 2 * 3600000); // +2 hours
+    const endDate = add(startDate, {hours: 2}); // +2 hours
     return { startDate, endDate };
   };
 
