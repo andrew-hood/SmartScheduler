@@ -24,16 +24,16 @@ export default function Preferences({ ...props }) {
   const [preferences, setPreferences] = useState({} as any);
   const methods = [
     {
-      label: "Via Calendar",
+      label: "Suggest my schedule",
       value: "automatic",
       description:
-        "You can automatically block out times based on your availability in your calendar.",
+        "Automatically suggest learning times based on your availability over the next week.",
       recommended: true,
     },
     {
-      label: "Manual",
+      label: "Set my schedule",
       value: "manual",
-      description: "You can manually block out times for each day of the week.",
+      description: "Manually choose your own learning times for each day of the week.",
     },
   ];
 
@@ -185,7 +185,7 @@ export default function Preferences({ ...props }) {
             semanticElement="h4"
             marginBottom={3}
           >
-            Login to your calendar
+            Connect your calendar
           </Heading>
           <ButtonFilled size="lg" width={300}>
             Login to Microsoft
