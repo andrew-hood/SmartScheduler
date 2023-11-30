@@ -4,6 +4,8 @@ import {
   Card,
   Heading,
   Link,
+  NotificationContainer,
+  NotificationManager,
   Pill,
   Text,
   View,
@@ -15,6 +17,7 @@ import ApiV3Service from "~/services/api";
 import { formatDate, getMonday } from "~/utils/date";
 import { saveAs } from "file-saver";
 import ical from "ical-generator";
+import axios from "axios";
 
 const Cards = ({ cards }: { cards: any[] }) => (
   <View flexDirection="row" gap={3} overflow="scroll" marginTop={3}>
@@ -73,7 +76,10 @@ export default function Schedule() {
     return { startDate, endDate };
   };
 
-  const handleCalendarEventClick = (eventDate: string, timeBlock: string) => {
+  const handleCalendarEventClick = async (
+    eventDate: string,
+    timeBlock: string
+  ) => {
     const { startDate, endDate } = getTimeBlockHours(timeBlock, eventDate);
 
     const calendar = ical({ name: "My Learning Schedule" });
@@ -86,9 +92,44 @@ export default function Schedule() {
     });
 
     const icsData = calendar.toString();
-    const blob = new Blob([icsData], { type: "text/calendar;charset=utf-8" });
+
+    // Send email with the .ics data
+    try {
+      const response = await axios.post("/api/send-email", {
+        icsData,
+        email: session?.user.email,
+      });
+
+      if (response.status === 200) {
+        NotificationManager.success({
+          message: (
+            <Text>
+              <Text fontWeight="semibold">Success!</Text> Calendar event sent.
+            </Text>
+          ),
+          options: {
+            lifetime: 3000,
+            isOpen: true,
+          },
+        });
+      }
+    } catch (error) {
+      NotificationManager.danger({
+        message: (
+          <Text>
+            <Text fontWeight="semibold">Error!</Text> Failed to send calendar event.
+          </Text>
+        ),
+        options: {
+          lifetime: 3000,
+          isOpen: true,
+        },
+      });
+    }
+    // Save file with ics data
+    /*const blob = new Blob([icsData], { type: "text/calendar;charset=utf-8" });
     const fileName = `event-${Math.random().toString(36).substring(2, 15)}.ics`;
-    saveAs(blob, fileName);
+    saveAs(blob, fileName);*/
   };
 
   const api = new ApiV3Service(session?.accessToken as string);
@@ -173,6 +214,7 @@ export default function Schedule() {
           )}
         </View>
       ))}
+      <NotificationContainer />
     </View>
   );
 }
