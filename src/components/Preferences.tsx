@@ -115,7 +115,7 @@ export default function Preferences({ ...props }) {
     tasks.forEach((task: any) => {
       lp.addTask(
         JSON.stringify(task),
-        1800,
+        1800 * 1000,
         task.due_date
           ? new Date(task.due_date).getTime()
           : add(new Date(), { years: 1 }).getTime()
