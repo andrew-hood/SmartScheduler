@@ -4,6 +4,8 @@ import {
   Card,
   Heading,
   Link,
+  NotificationContainer,
+  NotificationManager,
   Pill,
   Text,
   View,
@@ -14,6 +16,9 @@ import React, { useEffect } from "react";
 import ApiV3Service from "~/services/api";
 import { formatDate, formatTime, getMonday } from "~/utils/date";
 import add from "date-fns/add";
+import { saveAs } from "file-saver";
+import ical from "ical-generator";
+import axios from "axios";
 
 const Cards = ({ cards }: { cards: any[] }) => (
   <View flexDirection="row" gap={3} overflow="scroll" marginTop={3}>
@@ -88,13 +93,91 @@ export default function Schedule() {
     (days as any)[dayIndex].tasks.push(task);
   });
 
-  const api = new ApiV3Service(session?.accessToken as string);
-  useEffect(() => {
-    api.getEnrolments().then((data) => {
-      console.log(data);
-      setCards(data.hits);
+  const getTimeBlockHours = (block: string, date: string) => {
+    const startDate = new Date(date);
+    switch (block) {
+      case "morning":
+        startDate.setHours(9, 0, 0);
+        break;
+      case "midday":
+        startDate.setHours(11, 0, 0);
+        break;
+      case "afternoon":
+        startDate.setHours(13, 0, 0);
+        break;
+      case "night":
+        startDate.setHours(18, 0, 0);
+        break;
+      default:
+        startDate.setHours(9, 0, 0);
+    }
+    const endDate = new Date(startDate.getTime() + 2 * 3600000); // +2 hours
+    return { startDate, endDate };
+  };
+
+  const handleCalendarEventClick = async (
+    eventDate: string,
+    timeBlock: string
+  ) => {
+    const { startDate, endDate } = getTimeBlockHours(timeBlock, eventDate);
+
+    const calendar = ical({ name: "My Learning Schedule" });
+    calendar.createEvent({
+      start: startDate,
+      end: endDate,
+      summary: "Scheduled Learning Session",
+      description: "A dedicated time block for learning.",
+      location: "https://go1learning.mygo1.com",
     });
-  }, []);
+
+    const icsData = calendar.toString();
+
+    // Send email with the .ics data
+    try {
+      const response = await axios.post("/api/send-email", {
+        icsData,
+        email: session?.user.email,
+      });
+
+      if (response.status === 200) {
+        NotificationManager.success({
+          message: (
+            <Text>
+              <Text fontWeight="semibold">Success!</Text> Calendar event sent.
+            </Text>
+          ),
+          options: {
+            lifetime: 3000,
+            isOpen: true,
+          },
+        });
+      }
+    } catch (error) {
+      NotificationManager.danger({
+        message: (
+          <Text>
+            <Text fontWeight="semibold">Error!</Text> Failed to send calendar
+            event.
+          </Text>
+        ),
+        options: {
+          lifetime: 3000,
+          isOpen: true,
+        },
+      });
+    }
+    // Save file with ics data
+    /*const blob = new Blob([icsData], { type: "text/calendar;charset=utf-8" });
+    const fileName = `event-${Math.random().toString(36).substring(2, 15)}.ics`;
+    saveAs(blob, fileName);*/
+  };
+
+  // const api = new ApiV3Service(session?.accessToken as string);
+  // useEffect(() => {
+  //   api.getEnrolments().then((data) => {
+  //     setCards(data.hits);
+  //   });
+  // }, []);
 
   console.log(days);
 
@@ -135,7 +218,24 @@ export default function Schedule() {
                 {day.label}
               </Heading>
             </View>
-            <Pill>{day.block}</Pill>
+            <View flexDirection="row" alignItems="center">
+              {day.block && (
+                <View flexDirection="row-reverse">
+                  <ButtonMinimal
+                    icon={IconCalendar}
+                    onClick={() =>
+                      handleCalendarEventClick(
+                        day.date.toISOString(),
+                        day.block || ""
+                      )
+                    }
+                  >
+                    Send calendar event
+                  </ButtonMinimal>
+                </View>
+              )}
+              <Pill>{day.block}</Pill>
+            </View>
           </View>
           <View flexDirection="row">
             <View marginTop={4}>
@@ -145,13 +245,9 @@ export default function Schedule() {
               <Cards cards={day.tasks || []} />
             </View>
           </View>
-          <View flexDirection="row-reverse">
-            <ButtonMinimal icon={IconCalendar}>
-              Send calendar event
-            </ButtonMinimal>
-          </View>
         </View>
       ))}
+      <NotificationContainer />
     </View>
   );
 }
