@@ -20,36 +20,27 @@ import axios from "axios";
 
 const Cards = ({ cards }: { cards: any[] }) => (
   <View flexDirection="row" gap={3} overflow="scroll" marginTop={3}>
-    {cards.map((card: any, index: number) => (
-      <Card key={index} href="" appearance="minimal">
-        <Card.Image src="" alt="Alt text" />
-        <Card.Content>
-          <Card.Title>{card.name}</Card.Title>
-          <Card.Meta>
-            <Card.MetaItem>
-              Start Time:{" "}
-              {formatTime(
-                new Date(
-                  card.startTime * 1000 -
-                    new Date().getTimezoneOffset() * 60 * 1000
-                )
-              )}
-            </Card.MetaItem>
-          </Card.Meta>
-          <Card.Meta>
-            <Card.MetaItem>
-              End Time:{" "}
-              {formatTime(
-                new Date(
-                  card.endTime * 1000 -
-                    new Date().getTimezoneOffset() * 60 * 1000
-                )
-              )}
-            </Card.MetaItem>
-          </Card.Meta>
-        </Card.Content>
-      </Card>
-    ))}
+    {cards.map((card: any, index: number) => {
+      const parsed = JSON.parse(card.name);
+      return (
+        <Card key={index} href="" appearance="minimal">
+          <Card.Image src={parsed?.lo?.image || ""} alt="Alt text" />
+          <Card.Content>
+            <Card.Title>{parsed?.lo?.title}</Card.Title>
+            <Card.Meta>
+              <Card.MetaItem>
+                Start Time: {formatTime(new Date(card.startTime * 1000))}
+              </Card.MetaItem>
+            </Card.Meta>
+            <Card.Meta>
+              <Card.MetaItem>
+                End Time: {formatTime(new Date(card.endTime * 1000))}
+              </Card.MetaItem>
+            </Card.Meta>
+          </Card.Content>
+        </Card>
+      );
+    })}
   </View>
 );
 
@@ -71,6 +62,7 @@ export default function Schedule() {
   ];
 
   const days = new Array(7).fill(1).map((_, index) => ({
+    index: (dayOfTheWeek + index) % 7,
     label: daysOfWeek[(dayOfTheWeek + index) % 7],
     block: null,
     date: add(new Date(), { days: index }),
@@ -85,7 +77,9 @@ export default function Schedule() {
   console.log(days);
 
   schedule?.schedule?.forEach((task: any) => {
-    const dayIndex = new Date(task.startTime * 1000).getDay();
+    const dayValue = new Date(task.startTime * 1000).getDay();
+    const dayIndex = days.findIndex((day) => day?.index === dayValue);
+    console.log(dayIndex);
     (days as any)[dayIndex].tasks.push(task);
   });
 

@@ -10,12 +10,13 @@ import {
   ToggleSwitch,
   View,
 } from "@go1d/go1d";
+import { add } from "date-fns";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import ApiV3Service from "~/services/api";
 import { GreedyScheduler } from "~/utils/GreedyScheduler";
 import { LearningPlan } from "~/utils/LearningPlan";
-import { getMonday } from "~/utils/date";
+import { getLocalDate, getMonday } from "~/utils/date";
 
 export default function Preferences({ ...props }) {
   const { data: session } = useSession();
@@ -73,8 +74,6 @@ export default function Preferences({ ...props }) {
       }
     });
 
-    console.log(values);
-
     const lp = new LearningPlan();
 
     Object.keys(values).forEach((day) => {
@@ -85,7 +84,7 @@ export default function Preferences({ ...props }) {
       switch (values[day]) {
         case "morning":
           startTime = date.getTime() / 1000 + 9 * 3600; // 9am
-          endTime = startTime + 10 * 3600; // 10am
+          endTime = startTime + 2 * 3600; // 11am
           break;
         case "midday":
           startTime = date.getTime() / 1000 + 11 * 3600; // 11am
@@ -102,22 +101,31 @@ export default function Preferences({ ...props }) {
       }
 
       lp.addAvailability(startTime, endTime);
+      console.log(startTime, new Date(startTime * 1000));
+      console.log(endTime, new Date(endTime * 1000));
     });
+
+    console.log(lp.getAvailabilities());
 
     // get assigned learning
 
     const api = new ApiV3Service(session?.accessToken as string);
     const tasks = await api.getAssignedLearning(session?.user.id as string);
+    console.log(tasks);
     tasks.forEach((task: any) => {
       lp.addTask(
-        task.lo?.title || task.lo_id,
+        JSON.stringify(task),
         1800,
-        new Date(task.due_date * 1000).getTime() / 1000
+        task.due_date
+          ? new Date(task.due_date).getTime() / 1000
+          : add(new Date(), { years: 1 }).getTime() / 1000
       );
     });
 
     const gs = new GreedyScheduler();
     const sr = gs.schedule(lp);
+
+    console.log(sr);
 
     localStorage.setItem("preference", JSON.stringify(values));
     localStorage.setItem("schedule", JSON.stringify(sr));

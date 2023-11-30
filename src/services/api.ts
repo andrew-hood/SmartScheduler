@@ -43,17 +43,13 @@ class ApiV3Service {
 
     return enrolments.map((enrolment: any) => {
       const lo = los.find((lo: any) => lo.id === enrolment.lo_id);
-      if (!lo) {
-        return { ...enrolment, lo: null };
-      }
-
       return {
         ...enrolment,
         lo: {
-          id: lo,
-          title: lo.core.title,
-          image: lo.core.image,
-          description: lo.core.description,
+          id: lo?.id || 0,
+          title: lo?.core?.title || enrolment.lo_id,
+          image: lo?.core.image || "",
+          description: lo?.core.description || "",
         },
       };
     });
