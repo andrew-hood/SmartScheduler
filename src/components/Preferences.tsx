@@ -78,7 +78,7 @@ export default function Preferences({ ...props }) {
 
     Object.keys(values).forEach((day) => {
       const dayIndex = daysOfWeek.indexOf(day as string);
-      const date = getMonday(new Date(), dayIndex);
+      const date = getMonday(add(new Date(), {days: 1}), dayIndex);
 
       let startTime, endTime;
       switch (values[day]) {
