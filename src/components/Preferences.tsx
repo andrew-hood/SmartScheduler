@@ -9,18 +9,38 @@ import {
   ToggleSwitch,
   View,
 } from "@go1d/go1d";
-import { add, milliseconds, startOfDay } from "date-fns";
+import {
+  add,
+  milliseconds,
+  startOfDay,
+  parseISO,
+  startOfWeek,
+  addDays,
+  format,
+  isWithinInterval,
+} from "date-fns";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import ApiV3Service from "~/services/api";
 import { GreedyScheduler } from "~/utils/GreedyScheduler";
 import { LearningPlan } from "~/utils/LearningPlan";
 import { moveSubsetToBack } from "~/utils/array";
+import axios from "axios";
+import { useRouter } from "next/router";
+
+type TimeBlockOption = {
+  label: string;
+  value: string;
+};
 
 export default function Preferences({ onSave, ...props }: { onSave: any }) {
+  const router = useRouter();
   const { data: session } = useSession();
   const [method, setMethod] = useState("manual");
   const [preferences, setPreferences] = useState(null);
+  const [accessToken, setAccessToken] = useState("");
+  const [calendarEvents, setCalendarEvents] = useState([]);
+
   const methods = [
     {
       label: "Set my schedule",
@@ -47,6 +67,13 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
     Sunday: false,
   });
 
+  const timeBlocks = {
+    morning: [9, 11],
+    midday: [11, 13],
+    afternoon: [13, 15],
+    evening: [15, 17],
+  };
+
   useEffect(() => {
     const preferences = JSON.parse(localStorage.getItem("preference") || "{}");
     Object.keys(days).forEach((day) => {
@@ -55,6 +82,151 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
     setDays({ ...days });
     setPreferences(preferences);
   }, []);
+
+  const fetchCalendarData = async (token: string) => {
+    try {
+      const response = await axios.get("/api/outlook", {
+        headers: { Authorization: token },
+      });
+
+      const calendarEvents = response.data.map((event: any) => ({
+        start: event.start.dateTime,
+        end: event.end.dateTime,
+      }));
+
+      setCalendarEvents(calendarEvents);
+      localStorage.setItem("calendarEvents", JSON.stringify(calendarEvents));
+    } catch (error) {
+      console.error("Error fetching calendar:", error);
+    }
+  };
+
+  const getNextDayOfWeek = (date: any, dayOfWeek: any) => {
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const dayIndex = days.indexOf(dayOfWeek);
+    const currentDayIndex = date.getDay();
+    const daysToAdd =
+      dayIndex <= currentDayIndex
+        ? 7 - currentDayIndex + dayIndex
+        : dayIndex - currentDayIndex;
+    return addDays(date, daysToAdd);
+  };
+
+  const isTimeBlockOverlapping = (
+    dayOfWeek: any,
+    startHour: any,
+    endHour: any,
+    calendarEvents: any
+  ) => {
+    const dayDate = getNextDayOfWeek(new Date(), dayOfWeek);
+    const startTime = new Date(dayDate.setHours(startHour, 0, 0));
+    const endTime = new Date(dayDate.setHours(endHour, 0, 0));
+
+    return calendarEvents.some((event: any) => {
+      const eventStart = parseISO(event.start);
+      const eventEnd = parseISO(event.end);
+      return (
+        isWithinInterval(startTime, { start: eventStart, end: eventEnd }) ||
+        isWithinInterval(endTime, { start: eventStart, end: eventEnd })
+      );
+    });
+  };
+
+  const getAvailableTimeBlocks = (
+    day: string,
+    calendarEvents: { start: string; end: string }[]
+  ): TimeBlockOption[] => {
+    const dayDate = getNextDayOfWeek(new Date(), day);
+    
+    return Object.entries(timeBlocks).reduce<TimeBlockOption[]>(
+      (availableBlocks, [block, [startHour, endHour]]) => {
+        if (
+          !isTimeBlockOverlapping(day, startHour!, endHour!, calendarEvents)
+        ) {
+          availableBlocks.push({
+            label: block.charAt(0).toUpperCase() + block.slice(1),
+            value: block,
+          });
+        }
+        return availableBlocks;
+      },
+      []
+    );
+  };
+
+  const isOverlappingWithEvents = (
+    day: any,
+    timeBlock: any,
+    calendarEvents: any
+  ) => {
+    const dayDate = new Date(day);
+    let startTime: any, endTime: any;
+
+    switch (timeBlock) {
+      case "morning":
+        startTime = new Date(dayDate.setHours(9, 0, 0));
+        endTime = new Date(dayDate.setHours(11, 0, 0));
+        break;
+      case "midday":
+        startTime = new Date(dayDate.setHours(11, 0, 0));
+        endTime = new Date(dayDate.setHours(13, 0, 0));
+        break;
+      case "afternoon":
+        startTime = new Date(dayDate.setHours(13, 0, 0));
+        endTime = new Date(dayDate.setHours(15, 0, 0));
+        break;
+      default:
+        startTime = new Date(dayDate.setHours(15, 0, 0));
+        endTime = new Date(dayDate.setHours(17, 0, 0));
+    }
+
+    return calendarEvents.some((event: any) => {
+      const eventStart = parseISO(event.start);
+      const eventEnd = parseISO(event.end);
+      return (
+        isWithinInterval(startTime, { start: eventStart, end: eventEnd }) ||
+        isWithinInterval(endTime, { start: eventStart, end: eventEnd })
+      );
+    });
+  };
+
+  useEffect(() => {
+    const storedEvents = localStorage.getItem("calendarEvents");
+    if (storedEvents) {
+      const events = JSON.parse(storedEvents);
+      setCalendarEvents(events);
+    }
+  }, []);
+
+  useEffect(() => {
+    const token = router.query.token;
+    if (token && typeof token === "string") {
+      localStorage.setItem("aztoken", token);
+      setMethod("automatic");
+      router.replace("/", undefined, { shallow: true });
+    }
+  }, [router]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("aztoken");
+    if (token) {
+      setAccessToken(token);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (accessToken) {
+      fetchCalendarData(accessToken);
+    }
+  }, [accessToken]);
 
   const daysOfWeek = [
     "Monday",
@@ -65,6 +237,13 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
     "Saturday",
     "Sunday",
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem("aztoken");
+    localStorage.removeItem("calendarEvents");
+    setAccessToken("");
+    setCalendarEvents([]);
+  };
 
   const handleSubmitForm = async (values: any, actions: any) => {
     Object.keys(values).forEach((day) => {
@@ -184,11 +363,76 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
             semanticElement="h4"
             marginBottom={3}
           >
-            Connect your calendar
+            {accessToken ? "Calendar connected" : "Connect your calendar"}
           </Heading>
-          <ButtonFilled size="lg" width={300}>
-            Login to Microsoft
-          </ButtonFilled>
+          {!accessToken ? (
+            <ButtonFilled size="lg" width={300} href="/api/az-auth/login">
+              Login to Microsoft
+            </ButtonFilled>
+          ) : (
+            <ButtonFilled size="lg" width={300} onClick={handleLogout}>
+              Logout from Microsoft
+            </ButtonFilled>
+          )}
+          {accessToken && preferences && (
+            <View marginTop={5}>
+              <Form initialValues={preferences} onSubmit={handleSubmitForm}>
+                <Heading
+                  visualHeadingLevel="Heading 4"
+                  semanticElement="h4"
+                  marginBottom={3}
+                >
+                  Recommended learning slots based on your existing calendar
+                </Heading>
+                {Object.keys(days).map((day) => {
+                  const availableBlocks = getAvailableTimeBlocks(
+                    day,
+                    calendarEvents
+                  );
+
+                  return (
+                    <View
+                      key={day}
+                      flexDirection="row"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      marginBottom={4}
+                    >
+                      <View width={160} flexDirection="row" alignItems="center">
+                        <ToggleSwitch
+                          disabled={availableBlocks.length === 0}
+                          size="md"
+                          label={day}
+                          value={(days as any)[day]}
+                          css={{ cursor: "default" }}
+                          onChange={(e: any) => {
+                            setDays({ ...days, [day]: e.target.checked });
+                          }}
+                        />
+                      </View>
+
+                      <Field
+                        id={`${day}`}
+                        name={`${day}`}
+                        component={Select}
+                        width={150}
+                        defaultValue="none"
+                        options={[
+                          { label: "None", value: "none" },
+                          ...availableBlocks,
+                        ]}
+                        disabled={!(days as any)[day]}
+                        required
+                      />
+                    </View>
+                  );
+                })}
+                <View flexDirection="row-reverse">
+                  <SubmitButton>Submit</SubmitButton>
+                </View>
+              </Form>
+            </View>
+          )}
         </View>
       )}
 
