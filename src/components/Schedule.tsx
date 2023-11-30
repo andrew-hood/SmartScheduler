@@ -13,6 +13,8 @@ import { useSession } from "next-auth/react";
 import React, { useEffect } from "react";
 import ApiV3Service from "~/services/api";
 import { formatDate, getMonday } from "~/utils/date";
+import { saveAs } from "file-saver";
+import ical from "ical-generator";
 
 const Cards = ({ cards }: { cards: any[] }) => (
   <View flexDirection="row" gap={3} overflow="scroll" marginTop={3}>
@@ -47,6 +49,46 @@ export default function Schedule() {
     Friday: { block: "midday", date: getMonday(new Date(), 4) },
     Saturday: { block: "none", date: getMonday(new Date(), 5) },
     Sunday: { block: "none", date: getMonday(new Date(), 6) },
+  };
+
+  const getTimeBlockHours = (block: string, date: string) => {
+    const startDate = new Date(date);
+    switch (block) {
+      case "morning":
+        startDate.setHours(9, 0, 0);
+        break;
+      case "midday":
+        startDate.setHours(11, 0, 0);
+        break;
+      case "afternoon":
+        startDate.setHours(13, 0, 0);
+        break;
+      case "night":
+        startDate.setHours(18, 0, 0);
+        break;
+      default:
+        startDate.setHours(9, 0, 0);
+    }
+    const endDate = new Date(startDate.getTime() + 2 * 3600000); // +2 hours
+    return { startDate, endDate };
+  };
+
+  const handleCalendarEventClick = (eventDate: string, timeBlock: string) => {
+    const { startDate, endDate } = getTimeBlockHours(timeBlock, eventDate);
+
+    const calendar = ical({ name: "My Learning Schedule" });
+    calendar.createEvent({
+      start: startDate,
+      end: endDate,
+      summary: "Scheduled Learning Session",
+      description: "A dedicated time block for learning.",
+      location: "https://go1learning.mygo1.com",
+    });
+
+    const icsData = calendar.toString();
+    const blob = new Blob([icsData], { type: "text/calendar;charset=utf-8" });
+    const fileName = `event-${Math.random().toString(36).substring(2, 15)}.ics`;
+    saveAs(blob, fileName);
   };
 
   const api = new ApiV3Service(session?.accessToken as string);
@@ -115,7 +157,15 @@ export default function Schedule() {
           ) : (
             (days as any)[day].block !== "none" && (
               <View flexDirection="row-reverse">
-                <ButtonMinimal icon={IconCalendar}>
+                <ButtonMinimal
+                  icon={IconCalendar}
+                  onClick={() =>
+                    handleCalendarEventClick(
+                      (days as any)[day].date,
+                      (days as any)[day].block
+                    )
+                  }
+                >
                   Send calendar event
                 </ButtonMinimal>
               </View>
