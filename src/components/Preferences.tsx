@@ -391,6 +391,9 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
                     calendarEvents
                   );
 
+                  const isDisabled = availableBlocks.length === 0;
+                  const toggleValue = isDisabled ? false : (days as any)[day];
+
                   return (
                     <View
                       key={day}
@@ -401,10 +404,10 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
                     >
                       <View width={160} flexDirection="row" alignItems="center">
                         <ToggleSwitch
-                          disabled={availableBlocks.length === 0}
+                          disabled={isDisabled}
                           size="md"
                           label={day}
-                          value={(days as any)[day]}
+                          value={toggleValue}
                           css={{ cursor: "default" }}
                           onChange={(e: any) => {
                             setDays({ ...days, [day]: e.target.checked });
