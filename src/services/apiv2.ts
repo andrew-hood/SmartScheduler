@@ -26,7 +26,7 @@ class ApiV2Service {
           title: enrolment?.lo?.title,
           image: enrolment?.lo?.image,
           description: enrolment?.lo?.summary,
-          duration: enrolment?.lo?.delivery?.duration,
+          duration: enrolment?.lo?.delivery?.duration || 30,
         }
       }
     });
