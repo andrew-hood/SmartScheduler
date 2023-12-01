@@ -21,12 +21,13 @@ import {
 } from "date-fns";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
-import ApiV3Service from "~/services/api";
+import ApiV3Service from "~/services/apiv3";
 import { GreedyScheduler } from "~/utils/GreedyScheduler";
 import { LearningPlan } from "~/utils/LearningPlan";
 import { moveSubsetToBack } from "~/utils/array";
 import axios from "axios";
 import { useRouter } from "next/router";
+import ApiV2Service from "~/services/apiv2";
 
 type TimeBlockOption = {
   label: string;
@@ -40,6 +41,7 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
   const [preferences, setPreferences] = useState(null);
   const [accessToken, setAccessToken] = useState("");
   const [calendarEvents, setCalendarEvents] = useState([]);
+  const [v2, setV2] = useState(false);
 
   const methods = [
     {
@@ -287,7 +289,9 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
 
     // get assigned learning
 
-    const api = new ApiV3Service(session?.accessToken as string);
+    const apiv3 = new ApiV3Service(session?.accessToken as string);
+    const apiv2 = new ApiV2Service(session?.accessToken as string);
+    const api = v2 ? apiv2 : apiv3;
     const tasks = await api.getAssignedLearning(session?.user.id as string);
     tasks.forEach((task: any) => {
       lp.addTask(
@@ -502,6 +506,15 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
               />
             </View>
           ))}
+          <ToggleSwitch
+              size="md"
+              label='Use V2'
+              value={v2}
+              css={{ cursor: "default" }}
+              onChange={(e: any) => {
+                setV2(e.target.checked);
+              }}
+            />
           <View flexDirection="row-reverse">
             <SubmitButton>Submit</SubmitButton>
           </View>
