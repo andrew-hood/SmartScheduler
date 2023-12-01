@@ -38,7 +38,7 @@ class ApiV3Service {
       .map((enrolment: any) => enrolment.lo_id)
       .join("&id[]=");
     const los = await this.http
-      .get(`/learning-objects?id[]=${loIds}`)
+      .get(`/learning-objects?include[]=metadata&include[]=core&id[]=${loIds}`)
       .then(({ data }) => data.hits);
 
     return enrolments.map((enrolment: any) => {
@@ -48,8 +48,9 @@ class ApiV3Service {
         lo: {
           id: lo?.id || 0,
           title: lo?.core?.title || enrolment.lo_id,
-          image: lo?.core.image || "",
-          description: lo?.core.description || "",
+          image: lo?.core?.image || "",
+          description: lo?.core?.description || "",
+          duration: lo?.metadata?.duration || 30,
         },
       };
     });

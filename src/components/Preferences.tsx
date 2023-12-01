@@ -292,7 +292,7 @@ export default function Preferences({ onSave, ...props }: { onSave: any }) {
     tasks.forEach((task: any) => {
       lp.addTask(
         JSON.stringify(task),
-        milliseconds({ minutes: 30 }),
+        milliseconds({ minutes: task.lo.duration }),
         task.due_date
           ? new Date(task.due_date).getTime()
           : add(new Date(), { years: 1 }).getTime()
