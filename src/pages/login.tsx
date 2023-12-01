@@ -7,6 +7,7 @@ import {
   View,
 } from "@go1d/go1d";
 import { getProviders, signIn } from "next-auth/react";
+import Image from "next/image";
 import { env } from "~/env.mjs";
 import { getServerAuthSession } from "~/server/auth";
 
@@ -78,6 +79,13 @@ export default function LoginPage({ providers }: { providers: Provider[] }) {
         gap={6}
       >
         <Heading visualHeadingLevel="Heading 3" semanticElement="h3">
+          <Image
+            src="/logo.jpg"
+            width={50}
+            height={30}
+            alt="logo"
+            style={{ marginRight: "8px", marginBottom: "-6px" }}
+          />
           {env.NEXT_PUBLIC_GO1_CLIENT_NAME}
         </Heading>
         {Object.values(providers).map((provider: any) => (

@@ -1,5 +1,4 @@
 import {
-  Accordion,
   ButtonFilled,
   Container,
   Heading,

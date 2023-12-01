@@ -10,6 +10,7 @@ import {
 import IconLogout from "@go1d/go1d/build/components/Icons/Logout";
 import { signOut, useSession } from "next-auth/react";
 import Head from "next/head";
+import Image from "next/image";
 import Link from "next/link";
 import { env } from "~/env.mjs";
 
@@ -73,7 +74,16 @@ export default function Layout({
               visualHeadingLevel="Heading 4"
               marginRight={3}
             >
-              <Link href="/">{title}</Link>
+              <Link href="/">
+                <Image
+                  src="/logo.jpg"
+                  width={40}
+                  height={25}
+                  alt="logo"
+                  style={{ marginRight: "8px", marginBottom: "-6px" }}
+                />
+                {title}
+              </Link>
             </Heading>
             {status === "authenticated" &&
               navigation.map((item) => (
